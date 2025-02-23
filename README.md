@@ -1,6 +1,6 @@
 # Avowed
 
-Avowed is a minimal, generic validation library for Go that leverages Go generics and the new cmp.Ordered constraint (available in Go 1.21+). It provides a flexible way to define type-safe validators and wrap values in a way that ensures they satisfy custom validation rules before being set.
+Avowed is a minimal, generic validation library for Go that leverages Go generics and the new cmp.Ordered constraint (available since Go 1.21). It provides a flexible way to define type-safe validators and wrap values in a way that ensures they satisfy custom validation rules before being set.
 Features
 
 * **Generic Validators:** Define validators for any ordered type (e.g. integers, floats, strings).
@@ -28,25 +28,38 @@ package main
 
 import (
 	"fmt"
-	"github.com/yourusername/avowed"
+	"github.com/tedla-brandsema/avowed"
 )
 
-type IntRangeValidator struct{}
+type IntRangeValidator struct{
+	Min int
+	Max int
+}
 
 func (v IntRangeValidator) Validate(val int) (bool, error) {
-	if val < 1 || val > 10 {
-		return false, fmt.Errorf("value %d is out of range [1, 10]", val)
+	if val < v.Min || val > v.Max {
+		return false, fmt.Errorf("value %d is out of range [%d, %d]", v.Min, v.Max, val)
 	}
 	return true, nil
 }
 
 func main() {
-	// Create a validated value using the custom validator.
+	// Create a Validator
+	v = IntRangeValidator{
+		Min: 1,
+		Max: 10,
+	},
+
+	if ok, err := v.Validate(11); !ok {
+		fmt.Println("Error:", err)
+	}
+
+
+	// Or use a Validator in nonjunction with a ValidatedValue
 	vv := avowed.ValidatedValue[int]{
-		Validator: IntRangeValidator{},
+		Validator: v,
 	}
 	
-	// Set a value.
 	if err := vv.Set(5); err != nil {
 		fmt.Println("Error:", err)
 		return
@@ -65,7 +78,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/yourusername/avowed"
+	"github.com/tedla-brandsema/avowed"
 )
 
 func main() {
@@ -93,18 +106,18 @@ func main() {
 ### How It Works
 
 * **Validator Interface:**
-
     Define a type that implements the method:`Validate(val T) (ok bool, err error)`
-    A successful validation should return true (with a nil error), whereas a failure should return false and an appropriate error message.
+    A successful validation should return `true` (with a `nil` error), whereas a failure should return `false` and an appropriate error message.
 
 * **ValidatedValue:**
+    This type holds a value of type `T` along with an associated `Validator[T]`. 
+	* `Set(val T) error`: Uses the validator to ensure that only valid values are stored.
+	* `Get() T`: Returns the current value.
 
-    This type holds a value of type T along with an associated `Validator[T]`. Its Set method uses the validator to ensure that only valid values are stored. The Get method returns the current value.
-
-Contributing
+## Contributing
 
 Contributions, issues, and feature requests are welcome! Please check the issues page if you’d like to contribute.
 License
 
-This project is licensed under the MIT License – see the LICENSE file for details.
+This project is licensed under the MIT License – see the [LICENSE](github.com/tedla-brandsema/avowed/LICENSE) file for details.
 
