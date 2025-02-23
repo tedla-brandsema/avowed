@@ -119,5 +119,5 @@ func main() {
 Contributions, issues, and feature requests are welcome! Please check the issues page if you’d like to contribute.
 License
 
-This project is licensed under the MIT License – see the [LICENSE](https://github.com/tedla-brandsema/avowed/LICENSE) file for details.
+This project is licensed under the MIT License – see the [LICENSE](https://github.com/tedla-brandsema/avowed/blob/main/LICENSE) file for details.
 
