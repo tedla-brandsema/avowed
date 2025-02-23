@@ -153,6 +153,26 @@ func TestMaxLengthValidator(t *testing.T) {
 	}
 }
 
+func TestLengthRangeValidator(t *testing.T) {
+	v := &LengthRangeValidator{Min: 3, Max: 6}
+	tests := []struct {
+		input string
+		ok    bool
+	}{
+		{"abcd", true},
+		{"ab", false},
+		{"abcdefg", false},
+		{"abc", true},    // exactly at minimum
+		{"abcdef", true}, // exactly at maximum
+	}
+	for _, tt := range tests {
+		ok, err := v.Validate(tt.input)
+		if ok != tt.ok {
+			t.Errorf("LengthRangeValidator(%q): expected ok=%v, got ok=%v, err=%v", tt.input, tt.ok, ok, err)
+		}
+	}
+}
+
 func TestRegexValidator(t *testing.T) {
 	pattern := regexp.MustCompile(`^\d+$`)
 	v := &RegexValidator{Pattern: pattern}
@@ -173,6 +193,53 @@ func TestRegexValidator(t *testing.T) {
 	}
 }
 
+func TestAlphaNumericValidator(t *testing.T) {
+	v := &AlphaNumericValidator{}
+	tests := []struct {
+		input string
+		ok    bool
+	}{
+		{"abc123", true},
+		{"ABC", true},
+		{"abc 123", false},
+		{"abc-123", false},
+		{"", false},
+	}
+	for _, tt := range tests {
+		ok, err := v.Validate(tt.input)
+		if ok != tt.ok {
+			t.Errorf("AlphaNumericValidator(%q): expected ok=%v, got ok=%v, err=%v", tt.input, tt.ok, ok, err)
+		}
+	}
+}
+
+func TestMACAddressValidator(t *testing.T) {
+	v := &MACAddressValidator{}
+	tests := []struct {
+		input string
+		ok    bool
+	}{
+		{"00:00:5e:00:53:01", true},
+		{"02:00:5e:10:00:00:00:01", true},
+		{"00:00:00:00:fe:80:00:00:00:00:00:00:02:00:5e:10:00:00:00:01", true},
+		{"00-00-5e-00-53-01", true},
+		{"02-00-5e-10-00-00-00-01", true},
+		{"00-00-00-00-fe-80-00-00-00-00-00-00-02-00-5e-10-00-00-00-01", true},
+		{"0000.5e00.5301", true},
+		{"0200.5e10.0000.0001", true},
+		{"0000.0000.fe80.0000.0000.0000.0200.5e10.0000.0001", true}, {"01:23:45:67:89:ab", true},
+		{"01-23-45-67-89-ab", true},
+		{"0123456789ab", false},
+		{"invalid-mac", false},
+	}
+	for _, tt := range tests {
+		ok, err := v.Validate(tt.input)
+		if ok != tt.ok {
+			t.Errorf("MACAddressValidator(%q): expected ok=%v, got ok=%v, err=%v", tt.input, tt.ok, ok, err)
+		}
+	}
+}
+
 func TestIpValidator(t *testing.T) {
 	v := &IpValidator{}
 	tests := []struct {
@@ -188,6 +255,42 @@ func TestIpValidator(t *testing.T) {
 		ok, err := v.Validate(tc.input)
 		if ok != tc.ok {
 			t.Errorf("IpValidator(%q): expected ok=%v, got ok=%v (err: %v)", tc.input, tc.ok, ok, err)
+		}
+	}
+}
+
+func TestIPv4Validator(t *testing.T) {
+	v := &IPv4Validator{}
+	tests := []struct {
+		input string
+		ok    bool
+	}{
+		{"192.168.0.1", true},
+		{"2001:db8::1", false},
+		{"invalid", false},
+	}
+	for _, tt := range tests {
+		ok, err := v.Validate(tt.input)
+		if ok != tt.ok {
+			t.Errorf("IPv4Validator(%q): expected ok=%v, got ok=%v, err=%v", tt.input, tt.ok, ok, err)
+		}
+	}
+}
+
+func TestIPv6Validator(t *testing.T) {
+	v := &IPv6Validator{}
+	tests := []struct {
+		input string
+		ok    bool
+	}{
+		{"2001:db8::1", true},
+		{"192.168.0.1", false},
+		{"invalid", false},
+	}
+	for _, tt := range tests {
+		ok, err := v.Validate(tt.input)
+		if ok != tt.ok {
+			t.Errorf("IPv6Validator(%q): expected ok=%v, got ok=%v, err=%v", tt.input, tt.ok, ok, err)
 		}
 	}
 }

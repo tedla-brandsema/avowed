@@ -102,6 +102,19 @@ func (v *MaxLengthValidator) Validate(val string) (ok bool, err error) {
 	return true, nil
 }
 
+type LengthRangeValidator struct {
+	Min int
+	Max int
+}
+
+func (v *LengthRangeValidator) Validate(val string) (ok bool, err error) {
+	l := len(val)
+	if l < v.Min || l > v.Max {
+		return false, fmt.Errorf("length %d is not in range [%d, %d]", l, v.Min, v.Max)
+	}
+	return true, nil
+}
+
 type RegexValidator struct {
 	Pattern *regexp.Regexp
 }
@@ -113,11 +126,54 @@ func (v *RegexValidator) Validate(val string) (ok bool, err error) {
 	return true, nil
 }
 
+type AlphaNumericValidator struct{}
+
+func (v *AlphaNumericValidator) Validate(val string) (ok bool, err error) {
+	matched, err := regexp.MatchString(`^[a-zA-Z0-9]+$`, val)
+	if err != nil {
+		return false, err
+	}
+	if !matched {
+		return false, fmt.Errorf("value %q is not alphanumeric", val)
+	}
+	return true, nil
+}
+
+type MACAddressValidator struct{}
+
+func (v *MACAddressValidator) Validate(val string) (ok bool, err error) {
+	_, err = net.ParseMAC(val)
+	if err != nil {
+		return false, fmt.Errorf("invalid MAC address %q: %v", val, err)
+	}
+	return true, nil
+}
+
 type IpValidator struct{}
 
 func (v *IpValidator) Validate(val string) (ok bool, err error) {
 	if ip := net.ParseIP(val); ip == nil {
 		return false, fmt.Errorf("invalid IP address %q", val)
+	}
+	return true, nil
+}
+
+type IPv4Validator struct{}
+
+func (v *IPv4Validator) Validate(val string) (ok bool, err error) {
+	ip := net.ParseIP(val)
+	if ip == nil || ip.To4() == nil {
+		return false, fmt.Errorf("invalid IPv4 address %q", val)
+	}
+	return true, nil
+}
+
+type IPv6Validator struct{}
+
+func (v *IPv6Validator) Validate(val string) (ok bool, err error) {
+	ip := net.ParseIP(val)
+	if ip == nil || ip.To4() != nil {
+		return false, fmt.Errorf("invalid IPv6 address %q", val)
 	}
 	return true, nil
 }

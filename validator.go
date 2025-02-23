@@ -31,3 +31,10 @@ func (v *ValidatedValue[T]) Set(val T) error {
 func (v *ValidatedValue[T]) Get() T {
 	return v.value
 }
+
+func MustValidate[T cmp.Ordered](val T, v Validator[T]) T {
+	if ok, err := v.Validate(val); !ok {
+		panic(err)
+	}
+	return val
+}
