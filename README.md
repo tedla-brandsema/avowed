@@ -105,11 +105,11 @@ func main() {
 
 ### How It Works
 
-* **Validator Interface:**
+* **Validator Interface:**\
     Define a type that implements the method:`Validate(val T) (ok bool, err error)`
     A successful validation should return `true` (with a `nil` error), whereas a failure should return `false` and an appropriate error message.
 
-* **ValidatedValue:**
+* **ValidatedValue:**\
     This type holds a value of type `T` along with an associated `Validator[T]`. 
 	* `Set(val T) error`: Uses the validator to ensure that only valid values are stored.
 	* `Get() T`: Returns the current value.
@@ -119,5 +119,5 @@ func main() {
 Contributions, issues, and feature requests are welcome! Please check the issues page if you’d like to contribute.
 License
 
-This project is licensed under the MIT License – see the [LICENSE](github.com/tedla-brandsema/avowed/LICENSE) file for details.
+This project is licensed under the MIT License – see the [LICENSE](https://github.com/tedla-brandsema/avowed/LICENSE) file for details.
 
