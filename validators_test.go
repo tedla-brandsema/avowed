@@ -20,7 +20,7 @@ func TestIntRangeValidator(t *testing.T) {
 	for _, tc := range tests {
 		ok, err := v.Validate(tc.input)
 		if ok != tc.ok {
-			t.Errorf("IntRangeValidator(%d): expected ok=%v, got ok=%v (err: %v)", tc.input, tc.ok, ok, err)
+			t.Errorf("%T(%d): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
 	}
 }
@@ -38,7 +38,7 @@ func TestNonNegativeIntValidator(t *testing.T) {
 	for _, tc := range tests {
 		ok, err := v.Validate(tc.input)
 		if ok != tc.ok {
-			t.Errorf("NonNegativeIntValidator(%d): expected ok=%v, got ok=%v (err: %v)", tc.input, tc.ok, ok, err)
+			t.Errorf("%T(%d): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
 	}
 }
@@ -56,7 +56,7 @@ func TestNonPositiveIntValidator(t *testing.T) {
 	for _, tc := range tests {
 		ok, err := v.Validate(tc.input)
 		if ok != tc.ok {
-			t.Errorf("NonPositiveIntValidator(%d): expected ok=%v, got ok=%v (err: %v)", tc.input, tc.ok, ok, err)
+			t.Errorf("%T(%d): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
 	}
 }
@@ -75,7 +75,7 @@ func TestUrlValidator(t *testing.T) {
 	for _, tc := range tests {
 		ok, err := v.Validate(tc.input)
 		if ok != tc.ok {
-			t.Errorf("UrlValidator(%q): expected ok=%v, got ok=%v (err: %v)", tc.input, tc.ok, ok, err)
+			t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
 	}
 }
@@ -93,7 +93,7 @@ func TestEmailValidator(t *testing.T) {
 	for _, tc := range tests {
 		ok, err := v.Validate(tc.input)
 		if ok != tc.ok {
-			t.Errorf("EmailValidator(%q): expected ok=%v, got ok=%v (err: %v)", tc.input, tc.ok, ok, err)
+			t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
 	}
 }
@@ -110,7 +110,7 @@ func TestNonEmptyStringValidator(t *testing.T) {
 	for _, tc := range tests {
 		ok, err := v.Validate(tc.input)
 		if ok != tc.ok {
-			t.Errorf("NonEmptyStringValidator(%q): expected ok=%v, got ok=%v (err: %v)", tc.input, tc.ok, ok, err)
+			t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
 	}
 }
@@ -129,7 +129,7 @@ func TestMinLengthValidator(t *testing.T) {
 	for _, tc := range tests {
 		ok, err := v.Validate(tc.input)
 		if ok != tc.ok {
-			t.Errorf("MinLengthValidator(%q): expected ok=%v, got ok=%v (err: %v)", tc.input, tc.ok, ok, err)
+			t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
 	}
 }
@@ -148,7 +148,7 @@ func TestMaxLengthValidator(t *testing.T) {
 	for _, tc := range tests {
 		ok, err := v.Validate(tc.input)
 		if ok != tc.ok {
-			t.Errorf("MaxLengthValidator(%q): expected ok=%v, got ok=%v (err: %v)", tc.input, tc.ok, ok, err)
+			t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
 	}
 }
@@ -168,7 +168,7 @@ func TestLengthRangeValidator(t *testing.T) {
 	for _, tt := range tests {
 		ok, err := v.Validate(tt.input)
 		if ok != tt.ok {
-			t.Errorf("LengthRangeValidator(%q): expected ok=%v, got ok=%v, err=%v", tt.input, tt.ok, ok, err)
+			t.Errorf("%T(%q): expected ok=%v, got ok=%v, err=%v", *v, tt.input, tt.ok, ok, err)
 		}
 	}
 }
@@ -188,7 +188,7 @@ func TestRegexValidator(t *testing.T) {
 	for _, tc := range tests {
 		ok, err := v.Validate(tc.input)
 		if ok != tc.ok {
-			t.Errorf("RegexValidator(%q): expected ok=%v, got ok=%v (err: %v)", tc.input, tc.ok, ok, err)
+			t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
 	}
 }
@@ -208,7 +208,7 @@ func TestAlphaNumericValidator(t *testing.T) {
 	for _, tt := range tests {
 		ok, err := v.Validate(tt.input)
 		if ok != tt.ok {
-			t.Errorf("AlphaNumericValidator(%q): expected ok=%v, got ok=%v, err=%v", tt.input, tt.ok, ok, err)
+			t.Errorf("%T(%q): expected ok=%v, got ok=%v, err=%v", *v, tt.input, tt.ok, ok, err)
 		}
 	}
 }
@@ -235,7 +235,7 @@ func TestMACAddressValidator(t *testing.T) {
 	for _, tt := range tests {
 		ok, err := v.Validate(tt.input)
 		if ok != tt.ok {
-			t.Errorf("MACAddressValidator(%q): expected ok=%v, got ok=%v, err=%v", tt.input, tt.ok, ok, err)
+			t.Errorf("%T(%q): expected ok=%v, got ok=%v, err=%v", *v, tt.input, tt.ok, ok, err)
 		}
 	}
 }
@@ -254,7 +254,7 @@ func TestIpValidator(t *testing.T) {
 	for _, tc := range tests {
 		ok, err := v.Validate(tc.input)
 		if ok != tc.ok {
-			t.Errorf("IpValidator(%q): expected ok=%v, got ok=%v (err: %v)", tc.input, tc.ok, ok, err)
+			t.Errorf("%T(%q): expected ok=%v, got ok=%v (err: %v)", *v, tc.input, tc.ok, ok, err)
 		}
 	}
 }
@@ -272,7 +272,7 @@ func TestIPv4Validator(t *testing.T) {
 	for _, tt := range tests {
 		ok, err := v.Validate(tt.input)
 		if ok != tt.ok {
-			t.Errorf("IPv4Validator(%q): expected ok=%v, got ok=%v, err=%v", tt.input, tt.ok, ok, err)
+			t.Errorf("%T(%q): expected ok=%v, got ok=%v, err=%v", *v, tt.input, tt.ok, ok, err)
 		}
 	}
 }
@@ -290,7 +290,76 @@ func TestIPv6Validator(t *testing.T) {
 	for _, tt := range tests {
 		ok, err := v.Validate(tt.input)
 		if ok != tt.ok {
-			t.Errorf("IPv6Validator(%q): expected ok=%v, got ok=%v, err=%v", tt.input, tt.ok, ok, err)
+			t.Errorf("%T(%q): expected ok=%v, got ok=%v, err=%v", *v, tt.input, tt.ok, ok, err)
+		}
+	}
+}
+
+func TestXMLValidator(t *testing.T) {
+	v := &XMLValidator{}
+	tests := []struct {
+		input string
+		ok    bool
+	}{
+		{
+			input: `<note>
+					<to>Tove</to>
+					<from>Jani</from>
+					<heading>Reminder</heading>
+					<body>Don't forget me this weekend!</body>
+				</note>`,
+			ok: true,
+		},
+		{
+			input: `<root><child>value</child></root>`,
+			ok:    true,
+		},
+		{
+			input: `<root><child>value</child>`,
+			ok:    false,
+		},
+		{
+			input: "Just plain text",
+			ok:    false,
+		},
+		{
+			input: "",
+			ok:    false,
+		},
+	}
+
+	for _, tc := range tests {
+		ok, err := v.Validate(tc.input)
+		if ok != tc.ok {
+			t.Errorf("%T(%q): expected ok=%v, got ok=%v, error: %v", *v, tc.input, tc.ok, ok, err)
+		}
+	}
+}
+
+func TestJSONValidator(t *testing.T) {
+	v := &JSONValidator{}
+	tests := []struct {
+		input string
+		ok    bool
+	}{
+		{`{"key": "value"}`, true},
+		{`[1, 2, 3]`, true},
+		{`"a simple string"`, true},
+		{`123`, true},
+		{`true`, true},
+		{`false`, true},
+		{`null`, true},
+		{"  { \"key\": 123 }  ", true}, // Whitespace is allowed.
+		{``, false},
+		{`invalid json`, false},
+		{`{"key": "value" extra}`, false},
+		{`[1, 2,]`, false},
+	}
+
+	for _, tc := range tests {
+		ok, err := v.Validate(tc.input)
+		if ok != tc.ok {
+			t.Errorf("%T(%q): expected ok=%v, got ok=%v, error: %v", *v, tc.input, tc.ok, ok, err)
 		}
 	}
 }
@@ -312,7 +381,7 @@ func TestCompositeValidator_String(t *testing.T) {
 	for _, tc := range tests {
 		ok, err := composite.Validate(tc.input)
 		if ok != tc.ok {
-			t.Errorf("CompositeValidator (string) for input %q: expected ok=%v, got ok=%v (err: %v)", tc.input, tc.ok, ok, err)
+			t.Errorf("%T (string) for input %q: expected ok=%v, got ok=%v (err: %v)", *composite, tc.input, tc.ok, ok, err)
 		}
 	}
 }
@@ -334,7 +403,7 @@ func TestCompositeValidator_Int(t *testing.T) {
 	for _, tc := range tests {
 		ok, err := composite.Validate(tc.input)
 		if ok != tc.ok {
-			t.Errorf("CompositeValidator (int) for input %d: expected ok=%v, got ok=%v (err: %v)", tc.input, tc.ok, ok, err)
+			t.Errorf("%T (int) for input %d: expected ok=%v, got ok=%v (err: %v)", *composite, tc.input, tc.ok, ok, err)
 		}
 	}
 }

@@ -2,11 +2,15 @@ package avowed
 
 import (
 	"cmp"
+	"encoding/json"
+	"encoding/xml"
 	"fmt"
+	"io"
 	"net"
 	"net/mail"
 	"net/url"
 	"regexp"
+	"strings"
 )
 
 type CmpRangeValidator[T cmp.Ordered] struct {
@@ -174,6 +178,42 @@ func (v *IPv6Validator) Validate(val string) (ok bool, err error) {
 	ip := net.ParseIP(val)
 	if ip == nil || ip.To4() != nil {
 		return false, fmt.Errorf("invalid IPv6 address %q", val)
+	}
+	return true, nil
+}
+
+type XMLValidator struct{}
+
+func (v *XMLValidator) Validate(val string) (ok bool, err error) {
+	decoder := xml.NewDecoder(strings.NewReader(val))
+	var hasElement bool
+
+	for {
+		tok, err := decoder.Token()
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			return false, fmt.Errorf("XML parsing error: %w", err)
+		}
+
+		if _, ok := tok.(xml.StartElement); ok { // atleast one tag
+			hasElement = true
+		}
+	}
+
+	if !hasElement {
+		return false, fmt.Errorf("XML document must contain at least one element")
+	}
+
+	return true, nil
+}
+
+type JSONValidator struct{}
+
+func (v *JSONValidator) Validate(val string) (ok bool, err error) {
+	if !json.Valid([]byte(val)) {
+		return false, fmt.Errorf("invalid JSON")
 	}
 	return true, nil
 }
