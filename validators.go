@@ -4,6 +4,7 @@ import (
 	"cmp"
 	"encoding/json"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -113,8 +114,14 @@ type LengthRangeValidator struct {
 
 func (v *LengthRangeValidator) Validate(val string) (ok bool, err error) {
 	l := len(val)
+	if v.Min == 0 {
+		return false, errors.New("\"min\" value cannot be 0")
+	}
+	if v.Max == 0 {
+		return false, errors.New("\"max\" value cannot be 0")
+	}
 	if l < v.Min || l > v.Max {
-		return false, fmt.Errorf("length %d is not in range [%d, %d]", l, v.Min, v.Max)
+		return false, fmt.Errorf("value %q with length %d is not in range [%d, %d]", val, l, v.Min, v.Max)
 	}
 	return true, nil
 }
@@ -125,7 +132,7 @@ type RegexValidator struct {
 
 func (v *RegexValidator) Validate(val string) (ok bool, err error) {
 	if !v.Pattern.MatchString(val) {
-		return false, fmt.Errorf("value %s does not match pattern %s", val, v.Pattern.String())
+		return false, fmt.Errorf("value %q does not match pattern %q", val, v.Pattern.String())
 	}
 	return true, nil
 }
