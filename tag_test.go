@@ -1,23 +1,108 @@
 package avowed
 
 import (
+	"strings"
 	"testing"
 )
 
-type MyStruct struct {
-	Number int    `val:"range,min=4,max=6"`
-	Word   string `val:"length,min=4,max=6"`
-	Must   string `val:"alphnum"`
-}
-
-func TestValidateStruct(t *testing.T) {
-	if ok, err := ValidateStruct(MyStruct{
-		Word: "Pluk",
-		Must: "hello6#",
-	}); !ok {
-		t.Error(err)
-		return
+func TestValidateStruct_int(t *testing.T) {
+	tests := []struct {
+		name      string
+		data      interface{}
+		wantValid bool
+		errSubstr string
+	}{
+		{
+			name: "Valid int range and min length string",
+			data: struct {
+				Age  int    `val:"range,min=0,max=120"`
+				Name string `val:"min,size=3"`
+			}{Age: 30, Name: "John"},
+			wantValid: true,
+		},
+		{
+			name: "Invalid int range",
+			data: struct {
+				Age int `val:"range,min=0,max=120"`
+			}{Age: -1},
+			wantValid: false,
+			errSubstr: "out of range",
+		},
+		{
+			name: "Unknown validator id",
+			data: struct {
+				Field int `val:"foobar"`
+			}{Field: 10},
+			wantValid: false,
+			errSubstr: "unknown validator \"foobar\"",
+		},
 	}
 
-	t.Log("struct is valid!")
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			valid, err := ValidateStruct(tc.data)
+			if valid != tc.wantValid {
+				t.Errorf("expected valid=%v, got %v (error: %v)", tc.wantValid, valid, err)
+			}
+			if !tc.wantValid && err != nil && tc.errSubstr != "" {
+				if !strings.Contains(err.Error(), tc.errSubstr) {
+					t.Errorf("expected error to contain %q, got %q", tc.errSubstr, err.Error())
+				}
+			}
+		})
+	}
+}
+func TestValidateStruct_string(t *testing.T) {
+	tests := []struct {
+		name      string
+		data      interface{}
+		wantValid bool
+		errSubstr string
+	}{
+		{
+			name: "Invalid string min length",
+			data: struct {
+				Name string `val:"min,size=3"`
+			}{Name: "Al"},
+			wantValid: false,
+			errSubstr: "error validating field \"Name\"",
+		},
+		{
+			name: "Malformed parameter for string validator",
+			data: struct {
+				Name string `val:"min,"`
+			}{Name: "Alice"},
+			wantValid: false,
+			errSubstr: "expected 1 parameter",
+		},
+		{
+			name: "Valid length range for string",
+			data: struct {
+				Code string `val:"length,min=3,max=5"`
+			}{Code: "abcd"},
+			wantValid: true,
+		},
+		{
+			name: "Invalid length range (too short)",
+			data: struct {
+				Code string `val:"length,min=3,max=5"`
+			}{Code: "ab"},
+			wantValid: false,
+			errSubstr: "error validating field \"Code\"",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			valid, err := ValidateStruct(tc.data)
+			if valid != tc.wantValid {
+				t.Errorf("expected valid=%v, got %v (error: %v)", tc.wantValid, valid, err)
+			}
+			if !tc.wantValid && err != nil && tc.errSubstr != "" {
+				if !strings.Contains(err.Error(), tc.errSubstr) {
+					t.Errorf("expected error to contain %q, got %q", tc.errSubstr, err.Error())
+				}
+			}
+		})
+	}
 }

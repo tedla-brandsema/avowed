@@ -22,12 +22,45 @@ func ValidateStruct(data interface{}) (ok bool, err error) {
 				if ok, err := stringValidators(tag, field.Name, v); !ok {
 					return false, err
 				}
+			case int:
+				if ok, err := intValidators(tag, field.Name, v); !ok {
+					return false, err
+				}
 			}
 		}
 
 	}
 	return true, nil
 }
+func intValidators(tag string, name string, value int) (ok bool, err error) {
+	vals, err := vals(tag, name)
+	if err != nil {
+		return false, err
+	}
+	var v Validator[int]
+	switch id := strings.TrimSpace(vals[0]); id {
+	case "range":
+		min, max, err := rangeFinder(vals[1:])
+		if err != nil {
+			return false, err
+		}
+		v = &IntRangeValidator{
+			Min: min,
+			Max: max,
+		}
+	case "pos":
+		v = &NonNegativeIntValidator{}
+	case "neg":
+		v = &NonPositiveIntValidator{}
+	default:
+		return false, fmt.Errorf("unknown validator %q  for field %q", id, name)
+	}
+	return fieldValidate(name, value, v)
+}
+
+const (
+	sizeKey = "size"
+)
 
 func stringValidators(tag string, name string, value string) (ok bool, err error) {
 	vals, err := vals(tag, name)
@@ -45,15 +78,31 @@ func stringValidators(tag string, name string, value string) (ok bool, err error
 			Min: min,
 			Max: max,
 		}
+	case "min":
+		size, err := intParam(sizeKey, vals[1:])
+		if err != nil {
+			return false, err
+		}
+		v = &MinLengthValidator{
+			Size: size,
+		}
+	case "max":
+		size, err := intParam(sizeKey, vals[1:])
+		if err != nil {
+			return false, err
+		}
+		v = &MaxLengthValidator{
+			Size: size,
+		}
 	case "regex":
-		pattern, err := patternFinder(vals[1:])
+		pattern, err := patternParam(vals[1:])
 		if err != nil {
 			return false, err
 		}
 		v = &RegexValidator{
 			Pattern: pattern,
 		}
-	case "alphnum":
+	case "alphanum":
 		v = &AlphaNumericValidator{}
 	case "ipv4":
 		v = &IPv4Validator{}
@@ -65,6 +114,12 @@ func stringValidators(tag string, name string, value string) (ok bool, err error
 		v = &JSONValidator{}
 	case "xml":
 		v = &XMLValidator{}
+	case "url":
+		v = &UrlValidator{}
+	case "email":
+		v = &EmailValidator{}
+	case "!empty":
+		v = &NonEmptyStringValidator{}
 	default:
 		return false, fmt.Errorf("unknown validator %q  for field %q", id, name)
 	}
@@ -84,26 +139,6 @@ func vals(tag, name string) ([]string, error) {
 		return nil, fmt.Errorf("missing validator for field %q", name)
 	}
 	return vals, nil
-}
-
-const patternKey = "pattern"
-
-func patternFinder(params []string) (pattern *regexp.Regexp, err error) {
-	if len(params) != 1 {
-		return nil, fmt.Errorf("expected 1 parameter (%s), found: %v", patternKey, params)
-	}
-	k, v, err := kv(params[0])
-	if err != nil {
-		return nil, err
-	}
-	if k != patternKey {
-		return nil, fmt.Errorf("expected parameter %q, found: %q", patternKey, k)
-	}
-	pattern, err = regexp.Compile(v)
-	if err != nil {
-		return nil, err
-	}
-	return pattern, nil
 }
 
 const (
@@ -139,10 +174,54 @@ func rangeFinder(params []string) (min int, max int, err error) {
 	return min, max, nil
 }
 
+const patternKey = "pattern"
+
+func patternParam(params []string) (pattern *regexp.Regexp, err error) {
+	v, err := stringParam(patternKey, params)
+	if err != nil {
+		return nil, err
+	}
+	pattern, err = regexp.Compile(v)
+	if err != nil {
+		return nil, err
+	}
+	return pattern, nil
+}
+
+func intParam(key string, params []string) (int, error) {
+	v, err := stringParam(key, params)
+	if err != nil {
+		return 0, err
+	}
+	i, err := strconv.Atoi(v)
+	if err != nil {
+		return 0, fmt.Errorf("invalid value %q for parameter %q", v, key)
+	}
+	return i, nil
+}
+
+func stringParam(key string, params []string) (val string, err error) {
+	if len(params) != 1 || params[0] == "" {
+		return "", fmt.Errorf("expected 1 parameter (%s), found: %v", key, params)
+	}
+	k, v, err := kv(params[0])
+	if err != nil {
+		return "", err
+	}
+	if k != key {
+		return "", fmt.Errorf("expected parameter %q, found: %q", key, k)
+	}
+	return v, nil
+}
+
 func kv(pair string) (k string, v string, err error) {
 	kv := strings.Split(pair, "=")
 	if len(kv) == 2 {
-		return strings.TrimSpace(kv[0]), strings.TrimSpace(kv[1]), nil
+		k = strings.TrimSpace(kv[0])
+		v = strings.TrimSpace(kv[1])
+		if k != "" && v != "" {
+			return k, v, nil
+		}
 	}
 	return "", "", fmt.Errorf("malformed key value pair %q, expected format is \"key=value\"", pair)
 }

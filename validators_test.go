@@ -116,7 +116,7 @@ func TestNonEmptyStringValidator(t *testing.T) {
 }
 
 func TestMinLengthValidator(t *testing.T) {
-	v := &MinLengthValidator{Min: 3}
+	v := &MinLengthValidator{Size: 3}
 	tests := []struct {
 		input string
 		ok    bool
@@ -135,7 +135,7 @@ func TestMinLengthValidator(t *testing.T) {
 }
 
 func TestMaxLengthValidator(t *testing.T) {
-	v := &MaxLengthValidator{Max: 3}
+	v := &MaxLengthValidator{Size: 3}
 	tests := []struct {
 		input string
 		ok    bool
@@ -366,7 +366,7 @@ func TestJSONValidator(t *testing.T) {
 
 func TestCompositeValidator_String(t *testing.T) {
 	nonEmpty := &NonEmptyStringValidator{}
-	minLength := &MinLengthValidator{Min: 3}
+	minLength := &MinLengthValidator{Size: 3}
 	composite := &CompositeValidator[string]{Validators: []Validator[string]{nonEmpty, minLength}}
 
 	tests := []struct {

@@ -86,23 +86,23 @@ func (v *NonEmptyStringValidator) Validate(val string) (ok bool, err error) {
 }
 
 type MinLengthValidator struct {
-	Min int
+	Size int
 }
 
 func (v *MinLengthValidator) Validate(val string) (ok bool, err error) {
-	if len(val) < v.Min {
-		return false, fmt.Errorf("value %s exeeds minimum length %d", val, v.Min)
+	if len(val) < v.Size {
+		return false, fmt.Errorf("value %s exeeds minimum length %d", val, v.Size)
 	}
 	return true, nil
 }
 
 type MaxLengthValidator struct {
-	Max int
+	Size int
 }
 
 func (v *MaxLengthValidator) Validate(val string) (ok bool, err error) {
-	if len(val) > v.Max {
-		return false, fmt.Errorf("value %s exeeds maximum length %d", val, v.Max)
+	if len(val) > v.Size {
+		return false, fmt.Errorf("value %s exeeds maximum length %d", val, v.Size)
 	}
 	return true, nil
 }
