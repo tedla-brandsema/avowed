@@ -73,7 +73,7 @@ func TestValidateStruct_string(t *testing.T) {
 				Name string `val:"min,"`
 			}{Name: "Alice"},
 			wantValid: false,
-			errSubstr: "expected 1 parameter",
+			errSubstr: "error validating field",
 		},
 		{
 			name: "Valid length range for string",

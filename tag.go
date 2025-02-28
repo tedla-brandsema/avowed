@@ -11,93 +11,69 @@ import (
 
 const tagID = "val"
 
-func ValidateStruct(data interface{}) (ok bool, err error) {
-	val := reflect.ValueOf(data)
-	for i := 0; i < val.NumField(); i++ {
-		field := val.Type().Field(i)
-		if tag, ok := field.Tag.Lookup(tagID); ok {
-			i := val.FieldByName(field.Name).Interface()
-			switch v := i.(type) {
-			case string:
-				if ok, err := stringValidators(tag, field.Name, v); !ok {
-					return false, err
-				}
-			case int:
-				if ok, err := intValidators(tag, field.Name, v); !ok {
-					return false, err
-				}
-			}
-		}
-
-	}
-	return true, nil
-}
-func intValidators(tag string, name string, value int) (ok bool, err error) {
-	vals, err := vals(tag, name)
-	if err != nil {
-		return false, err
-	}
+func validateIntField(directive string, args []string, val int) error {
 	var v Validator[int]
-	switch id := strings.TrimSpace(vals[0]); id {
+	switch directive {
 	case "range":
-		min, max, err := rangeFinder(vals[1:])
+		keys := []string{"min", "max"}
+		pairs, err := findIntPairs(keys, args)
 		if err != nil {
-			return false, err
+			return err
 		}
 		v = &IntRangeValidator{
-			Min: min,
-			Max: max,
+			Min: pairs[keys[0]],
+			Max: pairs[keys[1]],
 		}
 	case "pos":
 		v = &NonNegativeIntValidator{}
 	case "neg":
 		v = &NonPositiveIntValidator{}
 	default:
-		return false, fmt.Errorf("unknown validator %q  for field %q", id, name)
+		return fmt.Errorf("unknown validator %q", directive)
 	}
-	return fieldValidate(name, value, v)
+	return fieldValidate(val, v)
 }
 
-const (
-	sizeKey = "size"
-)
-
-func stringValidators(tag string, name string, value string) (ok bool, err error) {
-	vals, err := vals(tag, name)
-	if err != nil {
-		return false, err
-	}
+func validateStrField(directive string, args []string, val string) error {
 	var v Validator[string]
-	switch id := strings.TrimSpace(vals[0]); id {
+	switch directive {
 	case "length":
-		min, max, err := rangeFinder(vals[1:])
+		keys := []string{"min", "max"}
+		pairs, err := findIntPairs(keys, args)
 		if err != nil {
-			return false, err
+			return err
 		}
 		v = &LengthRangeValidator{
-			Min: min,
-			Max: max,
+			Min: pairs[keys[0]],
+			Max: pairs[keys[1]],
 		}
 	case "min":
-		size, err := intParam(sizeKey, vals[1:])
+		keys := []string{"size"}
+		pairs, err := findIntPairs(keys, args)
 		if err != nil {
-			return false, err
+			return err
 		}
 		v = &MinLengthValidator{
-			Size: size,
+			Size: pairs[keys[0]],
 		}
 	case "max":
-		size, err := intParam(sizeKey, vals[1:])
+		keys := []string{"size"}
+		pairs, err := findIntPairs(keys, args)
 		if err != nil {
-			return false, err
+			return err
 		}
-		v = &MaxLengthValidator{
-			Size: size,
+		v = &MinLengthValidator{
+			Size: pairs[keys[0]],
 		}
 	case "regex":
-		pattern, err := patternParam(vals[1:])
+		keys := []string{"pattern"}
+		pairs, err := findStringPairs(keys, args)
 		if err != nil {
-			return false, err
+			return err
+		}
+		pattern, err := regexp.Compile(pairs[keys[0]])
+		if err != nil {
+			return err
 		}
 		v = &RegexValidator{
 			Pattern: pattern,
@@ -121,104 +97,96 @@ func stringValidators(tag string, name string, value string) (ok bool, err error
 	case "!empty":
 		v = &NonEmptyStringValidator{}
 	default:
-		return false, fmt.Errorf("unknown validator %q  for field %q", id, name)
+		return fmt.Errorf("unknown validator %q", directive)
 	}
-	return fieldValidate(name, value, v)
+	return fieldValidate(val, v)
 }
 
-func fieldValidate[T cmp.Ordered](name string, value T, v Validator[T]) (ok bool, err error) {
-	if ok, err := v.Validate(value); !ok {
-		return false, fmt.Errorf("error validating field %q: %v", name, err)
+func ValidateStruct(data interface{}) (bool, error) {
+	var err error
+
+	val := reflect.ValueOf(data)
+	for n := 0; n < val.NumField(); n++ {
+		field := val.Type().Field(n)
+		if tag, ok := field.Tag.Lookup(tagID); ok {
+			directive, args := splitTag(tag)
+			i := val.FieldByName(field.Name).Interface()
+			switch v := i.(type) {
+			case string:
+				err = validateStrField(directive, args, v)
+			case int:
+				err = validateIntField(directive, args, v)
+			}
+		}
+		if err != nil {
+			return false, fmt.Errorf("error validating field %q: %v", field.Name, err)
+		}
 	}
 	return true, nil
 }
 
-func vals(tag, name string) ([]string, error) {
-	vals := strings.Split(tag, ",")
-	if len(vals) == 0 {
-		return nil, fmt.Errorf("missing validator for field %q", name)
-	}
-	return vals, nil
+func splitTag(tag string) (id string, args []string) {
+	args = strings.Split(tag, ",")
+	return strings.TrimSpace(args[0]), args[1:]
 }
 
-const (
-	minKey = "min"
-	maxKey = "max"
-)
-
-func rangeFinder(params []string) (min int, max int, err error) {
-	if len(params) != 2 {
-		return 0, 0, fmt.Errorf("expected 2 parameters (%s, %s), found: %v", minKey, maxKey, params)
+func fieldValidate[T cmp.Ordered](value T, v Validator[T]) error {
+	if ok, err := v.Validate(value); !ok {
+		return err
 	}
-	for _, pair := range params {
+	return nil
+}
+
+func findIntPairs(keys []string, params []string) (map[string]int, error) {
+	intPairs := make(map[string]int)
+	pairs, err := findStringPairs(keys, params)
+	if err != nil {
+		return nil, err
+	}
+	for k, v := range pairs {
+		i, err := strconv.Atoi(v)
+		if err != nil {
+			return nil, fmt.Errorf("invalid value %q for parameter %q", v, k)
+		}
+		intPairs[k] = i
+	}
+	return intPairs, nil
+}
+
+func findStringPairs(keys []string, args []string) (map[string]string, error) {
+	pairs, err := extractPairs(args)
+	if err != nil {
+		return nil, err
+	}
+	if len(keys) != len(pairs) {
+		return nil, fmt.Errorf("expected %d parameter(s) (%s), found: %s", len(keys), keys, args)
+	}
+
+	for _, key := range keys {
+		if _, ok := pairs[key]; !ok {
+			return nil, fmt.Errorf("missing required parameter %q", keys)
+		}
+	}
+	return pairs, nil
+}
+
+func extractPairs(args []string) (map[string]string, error) {
+	pairs := make(map[string]string)
+	for _, pair := range args {
 		k, v, err := kv(pair)
 		if err != nil {
-			return 0, 0, err
+			return nil, err
 		}
-		if k == minKey {
-			min, err = strconv.Atoi(v)
-			if err != nil {
-				return 0, 0, fmt.Errorf("invalid value %q for parameter %q", v, k)
-			}
-			continue
-		}
-
-		if k == maxKey {
-			max, err = strconv.Atoi(v)
-			if err != nil {
-				return 0, 0, fmt.Errorf("invalid value %q for parameter %q", v, k)
-			}
-			continue
-		}
+		pairs[k] = v
 	}
-	return min, max, nil
-}
-
-const patternKey = "pattern"
-
-func patternParam(params []string) (pattern *regexp.Regexp, err error) {
-	v, err := stringParam(patternKey, params)
-	if err != nil {
-		return nil, err
-	}
-	pattern, err = regexp.Compile(v)
-	if err != nil {
-		return nil, err
-	}
-	return pattern, nil
-}
-
-func intParam(key string, params []string) (int, error) {
-	v, err := stringParam(key, params)
-	if err != nil {
-		return 0, err
-	}
-	i, err := strconv.Atoi(v)
-	if err != nil {
-		return 0, fmt.Errorf("invalid value %q for parameter %q", v, key)
-	}
-	return i, nil
-}
-
-func stringParam(key string, params []string) (val string, err error) {
-	if len(params) != 1 || params[0] == "" {
-		return "", fmt.Errorf("expected 1 parameter (%s), found: %v", key, params)
-	}
-	k, v, err := kv(params[0])
-	if err != nil {
-		return "", err
-	}
-	if k != key {
-		return "", fmt.Errorf("expected parameter %q, found: %q", key, k)
-	}
-	return v, nil
+	return pairs, nil
 }
 
 func kv(pair string) (k string, v string, err error) {
-	kv := strings.Split(pair, "=")
-	if len(kv) == 2 {
-		k = strings.TrimSpace(kv[0])
-		v = strings.TrimSpace(kv[1])
+	split := strings.Split(pair, "=")
+	if len(split) == 2 {
+		k = strings.TrimSpace(split[0])
+		v = strings.TrimSpace(split[1])
 		if k != "" && v != "" {
 			return k, v, nil
 		}
