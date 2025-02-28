@@ -2,6 +2,8 @@ package avowed
 
 import (
 	"cmp"
+	"errors"
+	"fmt"
 )
 
 type Validator[T cmp.Ordered] interface {
@@ -20,6 +22,9 @@ type ValidatedValue[T cmp.Ordered] struct {
 }
 
 func (v *ValidatedValue[T]) Set(val T) error {
+	if v.Validator == nil {
+		return errors.New("no validator set")
+	}
 	if ok, err := v.Validator.Validate(val); !ok {
 		return err
 	}
@@ -30,6 +35,10 @@ func (v *ValidatedValue[T]) Set(val T) error {
 
 func (v *ValidatedValue[T]) Get() T {
 	return v.value
+}
+
+func (v *ValidatedValue[T]) String() string {
+	return fmt.Sprintf("%v", v.value)
 }
 
 func MustValidate[T cmp.Ordered](val T, v Validator[T]) T {
