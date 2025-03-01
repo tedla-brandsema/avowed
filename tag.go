@@ -62,7 +62,7 @@ func validateStrField(directive string, args []string, val string) error {
 		if err != nil {
 			return err
 		}
-		v = &MinLengthValidator{
+		v = &MaxLengthValidator{
 			Size: pairs[keys[0]],
 		}
 	case "regex":
@@ -106,6 +106,14 @@ func ValidateStruct(data interface{}) (bool, error) {
 	var err error
 
 	val := reflect.ValueOf(data)
+	if val.Kind() == reflect.Ptr {
+		val = val.Elem()
+	}
+
+	if val.Kind() != reflect.Struct {
+		return false, fmt.Errorf("expected a struct but got %T", data)
+	}
+
 	for n := 0; n < val.NumField(); n++ {
 		field := val.Type().Field(n)
 		if tag, ok := field.Tag.Lookup(tagID); ok {
@@ -126,8 +134,15 @@ func ValidateStruct(data interface{}) (bool, error) {
 }
 
 func splitTag(tag string) (id string, args []string) {
-	args = strings.Split(tag, ",")
-	return strings.TrimSpace(args[0]), args[1:]
+	parts := strings.Split(tag, ",")
+	if len(parts) == 0 {
+		return "", nil
+	}
+	id = strings.TrimSpace(parts[0])
+	if len(parts) > 1 {
+		args = parts[1:]
+	}
+	return id, args
 }
 
 func fieldValidate[T cmp.Ordered](value T, v Validator[T]) error {
@@ -164,7 +179,7 @@ func findStringPairs(keys []string, args []string) (map[string]string, error) {
 
 	for _, key := range keys {
 		if _, ok := pairs[key]; !ok {
-			return nil, fmt.Errorf("missing required parameter %q", keys)
+			return nil, fmt.Errorf("missing required parameter %q", key)
 		}
 	}
 	return pairs, nil
