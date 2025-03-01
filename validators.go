@@ -90,6 +90,9 @@ type MinLengthValidator struct {
 }
 
 func (v *MinLengthValidator) Validate(val string) (ok bool, err error) {
+	if v.Size == 0 {
+		return false, errors.New(`value of parameter "size" cannot be 0`)
+	}
 	if len(val) < v.Size {
 		return false, fmt.Errorf("value %s exeeds minimum length %d", val, v.Size)
 	}
@@ -101,6 +104,9 @@ type MaxLengthValidator struct {
 }
 
 func (v *MaxLengthValidator) Validate(val string) (ok bool, err error) {
+	if v.Size == 0 {
+		return false, errors.New(`value of parameter "size" cannot be 0`)
+	}
 	if len(val) > v.Size {
 		return false, fmt.Errorf("value %s exeeds maximum length %d", val, v.Size)
 	}
@@ -115,10 +121,10 @@ type LengthRangeValidator struct {
 func (v *LengthRangeValidator) Validate(val string) (ok bool, err error) {
 	l := len(val)
 	if v.Min == 0 {
-		return false, errors.New("\"min\" value cannot be 0")
+		return false, errors.New(`"min" value cannot be 0`)
 	}
 	if v.Max == 0 {
-		return false, errors.New("\"max\" value cannot be 0")
+		return false, errors.New(`"max" value cannot be 0`)
 	}
 	if l < v.Min || l > v.Max {
 		return false, fmt.Errorf("value %q with length %d is not in range [%d, %d]", val, l, v.Min, v.Max)
