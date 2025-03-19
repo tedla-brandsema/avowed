@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-const tagID = "val"
+const tagKey = "val"
 
 func validateIntField(directive string, args []string, val int) error {
 	var v Validator[int]
@@ -116,8 +116,8 @@ func ValidateStruct(data interface{}) (bool, error) {
 
 	for n := 0; n < val.NumField(); n++ {
 		field := val.Type().Field(n)
-		if tag, ok := field.Tag.Lookup(tagID); ok {
-			directive, args := splitTag(tag)
+		if tagValue, ok := field.Tag.Lookup(tagKey); ok {
+			directive, args := splitTagValue(tagValue)
 			i := val.FieldByName(field.Name).Interface()
 			switch v := i.(type) {
 			case string:
@@ -133,8 +133,8 @@ func ValidateStruct(data interface{}) (bool, error) {
 	return true, nil
 }
 
-func splitTag(tag string) (id string, args []string) {
-	parts := strings.Split(tag, ",")
+func splitTagValue(tagVal string) (id string, args []string) {
+	parts := strings.Split(tagVal, ",")
 	if len(parts) == 0 {
 		return "", nil
 	}
