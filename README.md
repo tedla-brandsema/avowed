@@ -1,6 +1,8 @@
-# Avowed
+# Valex
 
-Avowed is a minimal, generic validation library for Go that leverages Go generics and the new cmp.Ordered constraint (available since Go 1.21). It provides a flexible way to define type-safe validators and wrap values in a way that ensures they satisfy custom validation rules before being set.
+*Valex* is an extensible validation library for Go. It provides a flexible way to define type-safe validators and wrap 
+values in a way that ensures they satisfy custom validation rules before being set. 
+
 Features
 
 * **Generic Validators:** Define validators for any ordered type (e.g. integers, floats, strings).
@@ -9,26 +11,24 @@ Features
 
 ## Installation
 
-Ensure you are using Go 1.21 or later since this package uses the cmp.Ordered constraint.
+To add Valex to your project, run:
 
-To add Avowed to your project, run:
+```
+go get -u github.com/tedla-brandsema/valex@latest
+```
 
-``
-go get github.com/tedla-brandsema/avowed
-``
-
-## Usage
+## Examples 
 
 ### Defining a Custom Validator
 
 Implement the `Validator[T]` interface for your type. For example, here’s a simple integer range validator:
 
-```
+```go
 package main
 
 import (
 	"fmt"
-	"github.com/tedla-brandsema/avowed"
+	"github.com/tedla-brandsema/valex"
 )
 
 type IntRangeValidator struct{
@@ -56,7 +56,7 @@ func main() {
 
 
 	// Or use a Validator in nonjunction with a ValidatedValue
-	vv := avowed.ValidatedValue[int]{
+	vv := valex.ValidatedValue[int]{
 		Validator: v,
 	}
 	
@@ -73,24 +73,24 @@ func main() {
 
 You can also use the `ValidatorFunc[T]` adapter to quickly create validators from functions:
 
-```
+```go
 package main
 
 import (
 	"fmt"
-	"github.com/tedla-brandsema/avowed"
+	"github.com/tedla-brandsema/valex"
 )
 
 func main() {
 	// Create a validator for strings that ensures they are non-empty.
-	nonEmptyValidator := avowed.ValidatorFunc[string](func(val string) (bool, error) {
+	nonEmptyValidator := valex.ValidatorFunc[string](func(val string) (bool, error) {
 		if val == "" {
 			return false, fmt.Errorf("string cannot be empty")
 		}
 		return true, nil
 	})
 
-	vv := avowed.ValidatedValue[string]{
+	vv := valex.ValidatedValue[string]{
 		Validator: nonEmptyValidator,
 	}
 
@@ -119,5 +119,5 @@ func main() {
 Contributions, issues, and feature requests are welcome! Please check the issues page if you’d like to contribute.
 License
 
-This project is licensed under the MIT License – see the [LICENSE](https://github.com/tedla-brandsema/avowed/blob/main/LICENSE) file for details.
+This project is licensed under the MIT License – see the [LICENSE](https://github.com/tedla-brandsema/valex/blob/main/LICENSE) file for details.
 
