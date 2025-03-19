@@ -52,6 +52,7 @@ func TestValidateStruct_int(t *testing.T) {
 		})
 	}
 }
+
 func TestValidateStruct_string(t *testing.T) {
 	tests := []struct {
 		name      string
