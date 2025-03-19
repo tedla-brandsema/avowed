@@ -1,4 +1,4 @@
-package avowed
+package valex
 
 import (
 	"cmp"
@@ -6,11 +6,11 @@ import (
 	"fmt"
 )
 
-type Validator[T cmp.Ordered] interface {
+type Validator[T any] interface {
 	Validate(val T) (ok bool, err error)
 }
 
-type ValidatorFunc[T cmp.Ordered] func(val T) (ok bool, err error)
+type ValidatorFunc[T any] func(val T) (ok bool, err error)
 
 func (p ValidatorFunc[T]) Validate(val T) (ok bool, err error) {
 	return p(val)
@@ -41,7 +41,7 @@ func (v *ValidatedValue[T]) String() string {
 	return fmt.Sprintf("%v", v.value)
 }
 
-func MustValidate[T cmp.Ordered](val T, v Validator[T]) T {
+func MustValidate[T any](val T, v Validator[T]) T {
 	if ok, err := v.Validate(val); !ok {
 		panic(err)
 	}
