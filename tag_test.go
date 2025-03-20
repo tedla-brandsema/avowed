@@ -29,12 +29,12 @@ func TestValidateStruct_int(t *testing.T) {
 			errSubstr: "out of range",
 		},
 		{
-			name: "Unknown validator id",
+			name: "Unknown directive id",
 			data: struct {
 				Field int `val:"foobar"`
 			}{Field: 10},
 			wantValid: false,
-			errSubstr: "unknown validator \"foobar\"",
+			errSubstr: "unknown directive \"foobar\"",
 		},
 	}
 
@@ -66,7 +66,7 @@ func TestValidateStruct_string(t *testing.T) {
 				Name string `val:"min,size=3"`
 			}{Name: "Al"},
 			wantValid: false,
-			errSubstr: "error validating field \"Name\"",
+			errSubstr: "error processing field \"Name\"",
 		},
 		{
 			name: "Malformed parameter for string validator",
@@ -74,12 +74,12 @@ func TestValidateStruct_string(t *testing.T) {
 				Name string `val:"min,"`
 			}{Name: "Alice"},
 			wantValid: false,
-			errSubstr: "error validating field",
+			errSubstr: "error processing field",
 		},
 		{
 			name: "Valid length range for string",
 			data: struct {
-				Code string `val:"length,min=3,max=5"`
+				Code string `val:"len,min=3,max=5"`
 			}{Code: "abcd"},
 			wantValid: true,
 		},
@@ -89,7 +89,7 @@ func TestValidateStruct_string(t *testing.T) {
 				Code string `val:"length,min=3,max=5"`
 			}{Code: "ab"},
 			wantValid: false,
-			errSubstr: "error validating field \"Code\"",
+			errSubstr: "error processing field \"Code\"",
 		},
 	}
 
