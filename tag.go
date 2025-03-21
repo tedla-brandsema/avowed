@@ -12,26 +12,27 @@ var (
 
 func init() {
 	tag = tagex.NewTag(tagKey)
+	tag.Verb = "validating"
 
 	// Int directives
-	tagex.RegisterDirective[int](&tag, &IntRangeValidator{})
-	tagex.RegisterDirective[int](&tag, &NonNegativeIntValidator{})
-	tagex.RegisterDirective[int](&tag, &NonPositiveIntValidator{})
+	tagex.RegisterDirective(&tag, &IntRangeValidator{})
+	tagex.RegisterDirective(&tag, &NonNegativeIntValidator{})
+	tagex.RegisterDirective(&tag, &NonPositiveIntValidator{})
 
 	// String directives
-	tagex.RegisterDirective[string](&tag, &UrlValidator{})
-	tagex.RegisterDirective[string](&tag, &EmailValidator{})
-	tagex.RegisterDirective[string](&tag, &NonEmptyStringValidator{})
-	tagex.RegisterDirective[string](&tag, &MinLengthValidator{})
-	tagex.RegisterDirective[string](&tag, &MaxLengthValidator{})
-	tagex.RegisterDirective[string](&tag, &LengthRangeValidator{})
-	tagex.RegisterDirective[string](&tag, &AlphaNumericValidator{})
-	tagex.RegisterDirective[string](&tag, &MACAddressValidator{})
-	tagex.RegisterDirective[string](&tag, &IpValidator{})
-	tagex.RegisterDirective[string](&tag, &IPv4Validator{})
-	tagex.RegisterDirective[string](&tag, &IPv6Validator{})
-	tagex.RegisterDirective[string](&tag, &XMLValidator{})
-	tagex.RegisterDirective[string](&tag, &JSONValidator{})
+	tagex.RegisterDirective(&tag, &UrlValidator{})
+	tagex.RegisterDirective(&tag, &EmailValidator{})
+	tagex.RegisterDirective(&tag, &NonEmptyStringValidator{})
+	tagex.RegisterDirective(&tag, &MinLengthValidator{})
+	tagex.RegisterDirective(&tag, &MaxLengthValidator{})
+	tagex.RegisterDirective(&tag, &LengthRangeValidator{})
+	tagex.RegisterDirective(&tag, &AlphaNumericValidator{})
+	tagex.RegisterDirective(&tag, &MACAddressValidator{})
+	tagex.RegisterDirective(&tag, &IpValidator{})
+	tagex.RegisterDirective(&tag, &IPv4Validator{})
+	tagex.RegisterDirective(&tag, &IPv6Validator{})
+	tagex.RegisterDirective(&tag, &XMLValidator{})
+	tagex.RegisterDirective(&tag, &JSONValidator{})
 }
 
 func ValidateStruct(data interface{}) (bool, error) {
